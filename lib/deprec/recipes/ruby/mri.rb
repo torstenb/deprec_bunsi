@@ -13,6 +13,13 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install Ruby"
       task :install do
         install_deps
+        apt.install( {:base => %w(ruby irb rdoc)}, :stable )
+        top.deprec.rubygems.install
+      end
+
+      desc "Install Ruby from source"
+      task :install_from_source do
+        install_deps
         deprec2.download_src(SRC_PACKAGES[:mri], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:mri], src_dir)
         top.deprec.rubygems.install
@@ -34,7 +41,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         :url => "http://rubyforge.org/frs/download.php/60718/rubygems-1.3.5.tgz",
 	    :configure => "",
 	    :make =>  "",
-        :install => 'ruby setup.rb;'
+        :install => 'ruby setup.rb; ln -s /usr/bin/gem1.8 /usr/bin/gem'
       }
       
       desc "Install Rubygems"
