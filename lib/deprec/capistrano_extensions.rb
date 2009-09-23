@@ -304,9 +304,14 @@ module Deprec2
 
   def set_package_defaults(pkg)
     pkg[:filename] ||= File.basename(pkg[:url])
-    pkg[:dir] ||= pkg[:filename].sub(/(\.tgz|\.tar\.gz)/,'')
     pkg[:download_method] ||= :http
-    pkg[:unpack] ||= "tar zxf #{pkg[:filename]};"
+    if pkg[:filename].index('.bz2') == nil
+      pkg[:dir] ||= pkg[:filename].sub(/(\.tgz|\.tar\.gz)/,'')
+      pkg[:unpack] ||= "tar zxf #{pkg[:filename]};"
+    else
+      pkg[:dir] ||= pkg[:filename].sub(/(\.tgz|\.tar\.bz2)/,'')
+      pkg[:unpack] ||= "tar jxf #{pkg[:filename]};"
+    end
     pkg[:configure] ||= './configure ;'
     pkg[:make] ||= 'make;'
     pkg[:install] ||= 'make install;'
