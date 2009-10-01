@@ -4,10 +4,10 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :sphinx do
       
       SRC_PACKAGES[:sphinx] = {
-        :filename => 'sphinx-0.9.8-rc2.tar.gz',   
-        :dir => 'sphinx-0.9.8-rc2',  
-        :url => "http://www.sphinxsearch.com/downloads/sphinx-0.9.8-rc2.tar.gz",
-        :unpack => "tar zxf sphinx-0.9.8-rc2.tar.gz;",
+        :filename => 'sphinx-0.9.8.1.tar.gz',   
+        :dir => 'sphinx-0.9.8.1',  
+        :url => "http://www.sphinxsearch.com/downloads/sphinx-0.9.8.1.tar.gz",
+        :unpack => "tar zxf sphinx-0.9.8.1.tar.gz;",
         :configure => %w(
           ./configure
           ;
