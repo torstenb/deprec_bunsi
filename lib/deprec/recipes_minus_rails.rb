@@ -59,3 +59,7 @@ require "#{File.dirname(__FILE__)}/recipes/utils"
 require "#{File.dirname(__FILE__)}/recipes/wpmu"
 require "#{File.dirname(__FILE__)}/recipes/ar_sendmail"
 require "#{File.dirname(__FILE__)}/recipes/starling"
+
+require "#{File.dirname(__FILE__)}/recipes/minicgi"
+require "#{File.dirname(__FILE__)}/recipes/phpmyadmin"
+require "#{File.dirname(__FILE__)}/recipes/app/mod_rails"
