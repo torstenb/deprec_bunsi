@@ -13,16 +13,20 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install Ruby"
       task :install do
         install_deps
-        apt.install( {:base => %w(ruby irb rdoc)}, :stable )
+        apt.install( {:base => %w(ruby libopenssl-ruby ruby1.8-dev irb rdoc)}, :stable )
         top.deprec.rubygems.install
+        set :ruby_bin_dir, '/usr/bin/ruby1.8'
+        set :ruby_lib_dir, '/usr/lib/ruby'
       end
 
       desc "Install Ruby from source"
-      task :install_from_source do
+      task :install_from_src do
         install_deps
         deprec2.download_src(SRC_PACKAGES[:mri], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:mri], src_dir)
         top.deprec.rubygems.install
+        set :ruby_bin_dir, '/usr/bin/ruby1.8'
+        set :ruby_lib_dir, '/usr/local/lib/ruby'
       end
       
       task :install_deps do

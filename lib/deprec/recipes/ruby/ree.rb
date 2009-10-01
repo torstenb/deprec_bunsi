@@ -14,7 +14,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         :install => "./installer --auto /opt/#{ree_version}"
       }
  
-      task :install_from_source do
+      task :install_from_src do
         install_deps
         deprec2.download_src(SRC_PACKAGES[:ree], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:ree], src_dir)
