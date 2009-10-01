@@ -82,14 +82,20 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       task :install_deps do
-        apt.install( {:base => %w(libmysqlclient15-dev sqlite3 libsqlite3-ruby libsqlite3-dev libpq-dev)}, :stable )
+        apps = case db_server_type
+          when :mysql then 'libmysqlclient15-dev'
+          when :postgresql then 'libpq-dev'
+          when :sqlite then 'sqlite3 libsqlite3-ruby libsqlite3-dev'
+          else 'libmysqlclient15-dev sqlite3 libsqlite3-ruby libsqlite3-dev libpq-dev'
+        end
+        apt.install( {:base => apps}, :stable )
       end
       
       # install some required ruby gems
       task :install_gems do
-        gem2.install 'sqlite3-ruby'
-        gem2.install 'mysql'
-        gem2.install 'ruby-pg'
+        gem2.install 'sqlite3-ruby' if db_server_type == :sqlite
+        gem2.install 'mysql' if db_server_type == :mysql
+        gem2.install 'ruby-pg' if db_server_type == :postgresql
         gem2.install 'rails'
         gem2.install 'rake'
         gem2.install 'rspec'
