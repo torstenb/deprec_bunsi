@@ -28,11 +28,14 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       desc "Install passenger"
       task :install, :roles => :app do
-        install_deps
-        rem_apache
-        gem2.install 'passenger'
-        run "#{sudo} passenger-install-nginx-module --auto --prefix=#{nginx_install_dir} --auto-download"
-        
+        if ruby_vm_type == :ree
+          run "#{sudo} #{ruby_bin_dir}/bin/passenger-install-nginx-module --auto --prefix=#{nginx_install_dir} --auto-download"
+        else
+          install_deps
+          rem_apache
+          gem2.install 'passenger'
+          run "#{sudo} passenger-install-nginx-module --auto --prefix=#{nginx_install_dir} --auto-download"
+        end
         create_nginx_user
         initial_config
         activate
@@ -76,12 +79,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         {:template => 'nginx.conf.erb',
           :path => nginx_install_dir + "/conf/nginx.conf",
           :mode => 0644,
-          :owner => 'www-data:adm'},
+          :owner => user + ':www-data'},
 
         {:template => 'nothing.conf',
           :path => nginx_vhost_dir + "/nothing.conf",
           :mode => 0644,
-          :owner => 'www-data:adm'}
+          :owner => user + ':www-data'}
 
 #        {:template => 'empty.log',
 #          :path => nginx_install_dir + "/logs/error.log",
@@ -149,7 +152,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         # Nginx returns error code if you try to start it when it's already running
         # We don't want this to kill Capistrano.
         #top.deprec.minicgi.stop
-        sudo("/etc/init.d/nginx start; exit 0")  
+        send(run_method, "/etc/init.d/nginx start; exit 0")
         #top.deprec.minicgi.start
       end
 
@@ -157,7 +160,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :stop, :roles => :web do
         # Nginx returns error code if you try to stop when it's not running
         # We don't want this to kill Capistrano. 
-        sudo("/etc/init.d/nginx stop; exit 0")  
+        send(run_method, "/etc/init.d/nginx stop; exit 0")
         #top.deprec.minicgi.stop
       end
 
