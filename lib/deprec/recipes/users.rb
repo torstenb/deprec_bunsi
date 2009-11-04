@@ -21,6 +21,9 @@ Capistrano::Configuration.instance(:must_exist).load do
         make_admin = Capistrano::CLI.ui.ask "Should this be an admin account?" do |q|
           q.default = 'no'
         end
+        make_wwwdata = Capistrano::CLI.ui.ask "Should I add this account to group www-data?" do |q|
+          q.default = 'no'
+        end
         copy_keys = false
         if File.readable?("config/ssh/authorized_keys/#{target_user}")
           copy_keys = Capistrano::CLI.ui.ask "I've found an authorized_keys file for #{target_user}. Should I copy it out?" do |q|
@@ -30,7 +33,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         new_password = Capistrano::CLI.ui.ask("Enter new password for #{target_user}") { |q| q.echo = false }
         
-        deprec2.useradd(target_user, :shell => '/bin/bash')
+        if make_wwwdata.match(/y/i)
+          deprec2.useradd(target_user, :shell => '/bin/bash', :group => 'www-data')
+        else
+          deprec2.useradd(target_user, :shell => '/bin/bash')
+        end
+        
 
         deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/, new_password)
         
@@ -39,7 +47,7 @@ Capistrano::Configuration.instance(:must_exist).load do
           deprec2.add_user_to_group(target_user, 'admin')
           deprec2.append_to_file_if_missing('/etc/sudoers', '%admin ALL=(ALL) ALL')
         end
-        
+
         if copy_keys && copy_keys.grep(/y/i)
           set :target_user, target_user
           top.deprec.ssh.setup_keys
