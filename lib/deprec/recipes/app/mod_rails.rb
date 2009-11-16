@@ -79,18 +79,25 @@ Capistrano::Configuration.instance(:must_exist).load do
         {:template => 'nginx.conf.erb',
           :path => nginx_install_dir + "/conf/nginx.conf",
           :mode => 0644,
-          :owner => user + ':www-data'},
+          :owner => 'deploy:www-data'},
 
         {:template => 'nothing.conf',
           :path => nginx_vhost_dir + "/nothing.conf",
           :mode => 0644,
-          :owner => user + ':www-data'}
+          :owner => 'deploy:www-data'}
 
 #        {:template => 'empty.log',
 #          :path => nginx_install_dir + "/logs/error.log",
 #          :mode => 0644,
 #          :owner => 'www-data:adm'}
+      ]
 
+      PROJECT_CONFIG_FILES[:mod_rails] = [
+           
+        {:template => 'logrotate.conf.erb',
+         :path => "logrotate.conf", 
+         :mode => 0644,
+         :owner => 'root:root'}  
       ]
 
       task :initial_config, :roles => :web do
@@ -99,6 +106,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         end
       end
       
+# TODO: check!
       desc <<-DESC
       Generate nginx config from template. Note that this does not
       push the config to the server, it merely generates required
@@ -109,6 +117,38 @@ Capistrano::Configuration.instance(:must_exist).load do
         SYSTEM_CONFIG_FILES[:mod_rails].each do |file|
           deprec2.render_template(:mod_rails, file)
         end
+      end
+
+# TODO: check!
+      desc "Generate Passenger Nginx configs (system level) from template."
+      task :config_gen_system do
+        SYSTEM_CONFIG_FILES[:mod_rails].each do |file|
+          deprec2.render_template(:mod_rails, file)
+        end
+      end
+
+# TODO: check!
+      desc "Generate Passenger Nginx configs (project level) from template."
+      task :config_gen_project do
+        PROJECT_CONFIG_FILES[:mod_rails].each do |file|
+          deprec2.render_template(:mod_rails, file)
+        end
+      end
+
+# TODO: check!
+      desc "Push Passenger configs (system level) to server"
+      task :config_system, :roles => :app do
+        deprec2.push_configs(:mod_rails, SYSTEM_CONFIG_FILES[:mod_rails])
+        activate_system
+      end
+
+# TODO: check!
+      desc "Push Passenger configs (project level) to server"
+      task :config_project, :roles => :app do
+        deprec2.push_configs(:mod_rails, PROJECT_CONFIG_FILES[:mod_rails])
+        #symlink_apache_vhost
+        activate_project
+        symlink_logrotate_config
       end
 
       task :symlink_logrotate_config, :roles => :app do
@@ -137,12 +177,30 @@ Capistrano::Configuration.instance(:must_exist).load do
         send(run_method, "update-rc.d nginx defaults")
       end
 
+# TODO: check!
+      task :activate_project, :roles => :app do
+        #sudo "a2ensite #{application}"
+        top.deprec.web.reload
+      end
+
       desc <<-DESC
       Dectivate nginx start scripts on server.
       Setup server to start nginx on boot.
       DESC
       task :deactivate, :roles => :web do
         send(run_method, "update-rc.d -f nginx remove")
+      end
+
+# TODO: check!
+      task :deactivate_system, :roles => :app do
+        #sudo "a2dismod passenger"
+        top.deprec.web.reload
+      end
+
+# TODO: check!
+      task :deactivate_project, :roles => :app do
+        #sudo "a2dissite #{application}"
+        top.deprec.web.reload
       end
 
       # Control

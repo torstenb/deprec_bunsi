@@ -59,7 +59,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
         desc "Start mini FastCGI"
         task :start do
-          send(run_method, "/etc/init.d/php5-fcgi start; exit 0")
+          send(run_method, "/etc/init.d/php5-fcgi start")
           #sudo("/etc/init.d/php5-fcgi start > /dev/null ; exit 0")  
         end
 

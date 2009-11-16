@@ -1,5 +1,5 @@
 #!/bin/sh
-sudo /usr/bin/spawn-fcgi -f /usr/bin/php-cgi -a 127.0.0.1 -p 49232 -C 2 -P <%= fcgi_pid_name %>
+/usr/bin/spawn-fcgi -f /usr/bin/php-cgi -a 127.0.0.1 -p 49232 -C 2 -P <%= fcgi_pid_name %>
 
 
 

@@ -8,6 +8,6 @@
         sharedscripts
         extension gz
         postrotate
-          [ ! -f /usr/local/nginx/logs/nginx.pid ] || kill -USR1 `cat /usr/local/nginx/logs/nginx.pid`
+          [ ! -f <%= nginx_install_dir %>/logs/nginx.pid ] || kill -USR1 `cat <%= nginx_install_dir %>/logs/nginx.pid`
         endscript
 }
