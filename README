@@ -1,4 +1,21 @@
 ------------------------------------------
+deprec_bunsi - updated version from deprec
+------------------------------------------
+
+== Info
+
+This is an updated version of Mike Bailey's deprec. It basically adds a few helpful new deployment recipes and updates some functions to better serve installation and deployment of bunsi.net
+
+== Install
+
+1. Check out from Github
+2. build gem from tree: 
+   gem build deprec.gemspec 
+3. install newly build gem from local folder:
+   sudo gem install --no-rdoc --no-ri -f -l deprec_bunsi-<current_version>.gem
+
+
+------------------------------------------
 deprec - Deployment Recipes for Capistrano
 ------------------------------------------
 

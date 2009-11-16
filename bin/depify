@@ -37,7 +37,7 @@ files = {
   FILE
 
   "config/deploy.rb" => unindent(<<-FILE),
-    require 'deprec'
+    require 'deprec_bunsi'
   
     set :application, "set your application name here"
     set :domain, "set domain name project will be served on here"
