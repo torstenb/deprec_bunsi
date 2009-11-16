@@ -1,19 +1,19 @@
 require 'rubygems' 
 
 SPEC = Gem::Specification.new do |s|
-  s.name = 'deprec'
+  s.name = 'deprec_bunsi'
   s.version = '2.1.5'
   
-  s.authors = ['Mike Bailey']
+  s.authors = ['Mike Bailey', 'Torsten Budesheim']
   s.description = <<-EOF
       This project provides libraries of Capistrano tasks and extensions to 
       remove the repetative manual work associated with installing services 
       on linux servers.
   EOF
-  s.email = 'mike@bailey.net.au'
-  s.homepage = 'http://www.deprec.org/'
-  s.rubyforge_project = 'deprec'
-  s.summary = 'deployment recipes for capistrano'
+  s.email = 'torstenb@gmail.com'
+  s.homepage = 'http://www.bunsi.net/'
+  s.rubyforge_project = ''
+  s.summary = 'deployment recipes for capistrano tailored to bunsi.net'
 
   s.require_paths = ['lib']
   s.add_dependency('capistrano', '> 2.5.0')
