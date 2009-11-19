@@ -38,7 +38,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     top.deprec.rails.symlink_shared_dirs
     top.deprec.rails.symlink_database_yml unless database_yml_in_scm
     top.deprec.rails.make_writable_by_app
-    top.deprec.passenger.set_owner_of_environment_rb if app_server_type.to_s == 'passenger'
+    top.deprec.passenger.set_owner_of_environment_rb if app_server_type.to_s == 'passenger' or app_server_type.to_s == 'mod_rails'
   end
 
   after :deploy, "deploy:cleanup"
@@ -46,13 +46,13 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :rake do
     namespace :gems do
       task :install, :roles => :app do
-        run "cd #{current_path} && #{sudo} rake gems:install"
+        run "cd #{current_path} && #{sudo} rake gems:install RAILS_ENV=#{stage}"
       end
     end
   end
   namespace :db do
     task :migrate, :roles => :db do
-      run "cd #{current_path} && #{sudo} rake gems:install"
+      run "cd #{current_path} && #{sudo} rake gems:install RAILS_ENV=#{stage}"
     end
   end
   
