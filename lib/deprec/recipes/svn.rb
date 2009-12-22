@@ -8,6 +8,12 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :deprec do 
     namespace :svn do
   
+      SRC_PACKAGES[:svn] = {
+        :filename => 'subversion-1.6.6.tar.gz',   
+        :dir => 'subversion-1.6.6',  
+        :url => "http://subversion.tigris.org/downloads/subversion-1.6.6.tar.gz",
+      }
+
       set :scm_group, 'scm'
   
       # Extract svn attributes from :repository URL
@@ -39,13 +45,14 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_deps
         # XXX should really check if apache has already been installed
         # XXX can do that when we move to rake
-        # deprec2.download_src(src_package, src_dir)
-        # deprec2.install_from_src(src_package, src_dir)
+        deprec2.download_src(SRC_PACKAGES[:svn], src_dir)
+        deprec2.install_from_src(SRC_PACKAGES[:svn], src_dir)
       end
   
       desc "install dependencies for Subversion"
       task :install_deps do
-        apt.install( {:base => %w(subversion)}, :stable )
+        apt.install( {:base => %w(libc6-dev g++ gcc libapr1 libapr1-dev libaprutil1 libaprutil1-dev libneon27 libneon27-dev)}, :stable )
+        # apt.install( {:base => %w(subversion)}, :stable )
         # XXX deprec1 - was building from source to get subversion-1.4.5 onto dapper. Compiled swig bindings for trac
         # apt.install( {:base => %w(build-essential wget libneon25 libneon25-dev swig python-dev libexpat1-dev)}, :stable )
       end
