@@ -88,7 +88,13 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Create a mysql user"
       task :create_user, :roles => :db do
-        # TBA
+        cmd = "CREATE USER '#{db_user}'@'localhost' IDENTIFIED BY '#{db_password}'"
+        run "mysql -u #{mysql_admin_user} -p -e \"#{cmd}\"" do |channel, stream, data|
+          if data =~ /^Enter password:/
+             channel.send_data "#{mysql_admin_pass}\n"
+           end
+        end       
+
       end
       
       desc "Create a database" 
