@@ -1,0 +1,11 @@
+check process php-fastcgi with pidfile <%= fcgi_pid_name %>
+  group server
+
+  start program = "/etc/init.d/php-fastcgi start"
+  stop program = "/etc/init.d/php-fastcgi stop"
+
+  if cpu > 60% for 2 cycles then alert
+  if cpu > 80% for 5 cycles then restart
+
+  if 5 restarts within 7 cycles then timeout
+

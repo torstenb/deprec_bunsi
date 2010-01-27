@@ -1,0 +1,13 @@
+check process nginx with pidfile <%= nginx_install_dir %>/logs/nginx.pid
+  group server
+
+  start program = "<%= nginx_install_dir %>/sbin/nginx start"
+  stop program = "<%= nginx_install_dir %>/sbin/nginx stop"
+
+  if failed host 127.0.0.1 port 8080 then restart
+
+  if cpu > 60% for 2 cycles then alert
+  if cpu > 80% for 5 cycles then restart
+
+  if 5 restarts within 7 cycles then timeout
+
