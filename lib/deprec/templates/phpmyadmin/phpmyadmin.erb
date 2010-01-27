@@ -2,8 +2,8 @@ server {
         listen   <%= phpmyadmin_port %>;
         server_name  <%= phpmyadmin_server %>;     # <-- will need to carry the full server name/URL
 
-        access_log  <%= phpmyadmin_log_dir %>/access.log;
-        error_log   <%= phpmyadmin_log_dir %>/error.log;
+        access_log  <%= phpmyadmin_log_dir %>/phpmyadmin_access.log;
+        error_log   <%= phpmyadmin_log_dir %>/phpmyadmin_error.log;
 
         location / {
                 root   <%= phpmyadmin_base_dir %>;
