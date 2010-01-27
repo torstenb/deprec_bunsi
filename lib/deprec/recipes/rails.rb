@@ -22,10 +22,13 @@ Capistrano::Configuration.instance(:must_exist).load do
     top.deprec.rails.setup_shared_dirs
     top.deprec.rails.install_packages_for_project
     top.deprec.rails.install_gems_for_project
+    sudo "chown -R #{user}:#{group} #{deploy_to}"
   end
 
   after 'deploy:setup', :except => { :no_release => true } do
+    puts "create_config_dir"
     top.deprec.rails.create_config_dir
+    puts "config_gen"
     top.deprec.rails.config_gen
     top.deprec.rails.config
     top.deprec.rails.activate_services
@@ -96,8 +99,8 @@ Capistrano::Configuration.instance(:must_exist).load do
         gem2.install 'sqlite3-ruby' if db_server_type == :sqlite
         gem2.install 'mysql' if db_server_type == :mysql
         gem2.install 'ruby-pg' if db_server_type == :postgresql
-        gem2.install 'rails'
-        gem2.install 'rake'
+        gem2.install 'rails' unless app_server_type == :mod_rails
+        gem2.install 'rake' unless app_server_type == :mod_rails
         gem2.install 'rspec'
       end
       
@@ -131,13 +134,13 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Generate config files for rails app."
       task :config_gen do
-        top.deprec.web.config_gen_project
+        top.deprec.web.config_gen_project unless app_server_type == :mod_rails
         top.deprec.app.config_gen_project
       end
 
       desc "Push out config files for rails app."
       task :config do
-        top.deprec.web.config_project
+        top.deprec.web.config_project unless app_server_type == :mod_rails
         top.deprec.app.config_project
       end
 
@@ -239,7 +242,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Activate web, app and monit"
       task :activate_services do
-        top.deprec.web.activate       
+        top.deprec.web.activate unless app_server_type == :mod_rails      
         top.deprec.app.activate
         top.deprec.monit.activate
       end
