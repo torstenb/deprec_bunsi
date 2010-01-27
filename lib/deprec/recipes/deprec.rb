@@ -28,7 +28,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   # Server options
   CHOICES_RUBY_VM   = [:mri, :ree]
   CHOICES_WEBSERVER = [:nginx, :apache, :none]
-  CHOICES_APPSERVER = [:mongrel, :webrick, :passenger, :none]
+  CHOICES_APPSERVER = [:mongrel, :webrick, :passenger, :mod_rails, :none]
   CHOICES_DATABASE  = [:mysql, :postgresql, :sqlite, :none]
   
   # Service defaults
@@ -145,7 +145,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :update_src do
       SRC_PACKAGES.each{|key, src_package| 
         current_dir = Dir.pwd
-        system "cd src/ && test -f #{src_package[:filename]} || wget --quiet --timestamping #{src_package[:url]}"
+        system "cd src/ && test -f #{src_package[:filename]} || wget --timeout=5 --quiet --timestamping #{src_package[:url]}"
         system "cd #{current_dir}"
       }
     end
