@@ -5,7 +5,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       set :mysql_admin_user, 'root'
       set(:mysql_admin_pass) { Capistrano::CLI.password_prompt "Enter database password for '#{mysql_admin_user}':"}
-      
+      set(:mysql_run_method) do fetch(:force_run_method, false) ? run_method : 'sudo' end
+
       # Installation
       
       desc "Install mysql"
@@ -45,33 +46,33 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :activate, :roles => :db do
-        send(run_method, "update-rc.d mysql defaults")
+        send(mysql_run_method, "update-rc.d mysql defaults")
       end  
       
       task :deactivate, :roles => :db do
-        send(run_method, "update-rc.d -f mysql remove")
+        send(mysql_run_method, "update-rc.d -f mysql remove")
       end
       
       # Control
       
       desc "Start Mysql"
       task :start, :roles => :db do
-        send(run_method, "/etc/init.d/mysql start")
+        send(mysql_run_method, "/etc/init.d/mysql start")
       end
       
       desc "Stop Mysql"
       task :stop, :roles => :db do
-        send(run_method, "/etc/init.d/mysql stop")
+        send(mysql_run_method, "/etc/init.d/mysql stop")
       end
       
       desc "Restart Mysql"
       task :restart, :roles => :db do
-        send(run_method, "/etc/init.d/mysql restart")
+        send(mysql_run_method, "/etc/init.d/mysql restart")
       end
       
       desc "Reload Mysql"
       task :reload, :roles => :db do
-        send(run_method, "/etc/init.d/mysql reload")
+        send(mysql_run_method, "/etc/init.d/mysql reload")
       end
       
       
@@ -111,7 +112,13 @@ Capistrano::Configuration.instance(:must_exist).load do
            end
         end
       end
-            
+      
+      desc "Change MySQL root password"
+      task :change_root_pw, :roles => :db do
+        set(:root_pw){ Capistrano::CLI.password_prompt("Enter new password for MySQL 'root': ") }
+        run "mysqladmin -u root password '#{root_pw}'"
+      end
+              
     end
   end
 end
