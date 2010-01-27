@@ -11,7 +11,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       SRC_PACKAGES[:svn] = {
         :filename => 'subversion-1.6.6.tar.gz',   
         :dir => 'subversion-1.6.6',  
-        :url => "http://subversion.tigris.org/downloads/subversion-1.6.6.tar.gz",
+        :url => "http://subversion.tigris.org/downloads/subversion-1.6.6.tar.gz"
       }
 
       set :scm_group, 'scm'
@@ -45,6 +45,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_deps
         # XXX should really check if apache has already been installed
         # XXX can do that when we move to rake
+        SRC_PACKAGES[:svn] = ':configure => "./configure --without-apxs"' if app == :mod_rails
         deprec2.download_src(SRC_PACKAGES[:svn], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:svn], src_dir)
       end
