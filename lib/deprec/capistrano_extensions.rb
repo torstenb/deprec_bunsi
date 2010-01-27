@@ -37,6 +37,12 @@ module Deprec2
   # If options[:path] and options[:remote] are missing, it just returns the rendered
   # template as a string (good for debugging).
   #
+  # 01/12/2010 - torstenb
+  # updated to be able to use an actual full path for rendering remotely. Yet the template
+  # can still be rendered locally as well, in which case the path will be removed and
+  # only the filename portion is used to render the template in the same local folder 
+  # structure as before
+  #
   #  XXX I would like to get rid of :render_template_to_file
   #  XXX Perhaps pass an option to this function to write to remote
   #
@@ -59,8 +65,6 @@ module Deprec2
     # e.g. config/templates/nginx/nginx.conf.erb
     local_template = File.join(local_template_dir, app.to_s, template)
     if File.exists?(local_template)
-      puts
-      puts "Using local template (#{local_template})"
       template = ERB.new(IO.read(local_template), nil, '-')
     else
       template = ERB.new(IO.read(File.join(DEPREC_TEMPLATES_BASE, app.to_s, template)), nil, '-')
@@ -71,12 +75,23 @@ module Deprec2
       # render to remote machine
       puts 'You need to specify a path to render the template to!' unless path
       exit unless path
-      sudo "test -d #{File.dirname(path)} || #{sudo} mkdir -p #{File.dirname(path)}"
-      std.su_put rendered_template, path, '/tmp/', :mode => mode
-      sudo "chown #{owner} #{path}" if defined?(owner)
+      # If the file path is relative we will prepend a path to this projects
+      # own config directory for this service.
+      if path[0,1] != '/'
+        full_remote_path = File.join(deploy_to, app, path) 
+      else
+        full_remote_path = path
+      end
+      sudo "test -d #{File.dirname(full_remote_path)} || #{sudo} mkdir -p #{File.dirname(full_remote_path)}"
+      std.su_put rendered_template, full_remote_path, '/tmp/', :mode => mode
+      sudo "chown #{owner} #{full_remote_path}" if defined?(owner)
     elsif path 
       # render to local file
-      full_path = File.join('config', stage, app.to_s, path)
+      if path[0,1] != '/'
+        full_path = File.join('config', stage, app.to_s, path)
+      else
+        full_path = File.join('config', stage, app.to_s, File.basename(path))
+      end
       path_dir = File.dirname(full_path)
       if File.exists?(full_path)
         if IO.read(full_path) == rendered_template
@@ -175,6 +190,7 @@ module Deprec2
         sudo "chown #{file[:owner]} #{full_remote_path}"
       else
         # Render directly to remote host.
+        puts "rendering template directly to host..."
         render_template(app, file.merge(:remote => true))
       end
     end
@@ -198,6 +214,12 @@ module Deprec2
     END
   end
 
+  def replace_in_file(filename, old_value, new_value, options={})
+    # replace '/' with '\/' because it otherwise would break the command
+    # XXX check if other characters can break the command    
+    sudo "sed -i 's/#{old_value.gsub(/\//, '\\\/')}/#{new_value.gsub(/\//, '\\\/')}/g' #{filename}"
+  end
+
   # create new user account on target system
   def useradd(user, options={})
     options[:shell] ||= '/bin/bash' # new accounts on ubuntu 6.06.1 have been getting /bin/sh
@@ -205,7 +227,7 @@ module Deprec2
     switches += " --shell=#{options[:shell]} " if options[:shell]
     switches += ' --create-home ' unless options[:homedir] == false
     switches += " --gid #{options[:group]} " unless options[:group].nil?
-    invoke_command "grep '^#{user}:' /etc/passwd || #{sudo}/usr/sbin/useradd #{switches} #{user}", 
+    invoke_command "grep '^#{user}:' /etc/passwd || #{sudo} /usr/sbin/useradd #{switches} #{user}", 
     :via => run_method
   end
 
@@ -267,7 +289,7 @@ module Deprec2
         # ensure wget is installed
         apt.install( {:base => %w(wget)}, :stable )
         # XXX replace with invoke_command
-        run "cd #{src_dir} && test -f #{src_package[:filename]} #{md5_clause} || #{sudo} wget --quiet --timestamping #{src_package[:url]}"
+        run "cd #{src_dir} && test -f #{src_package[:filename]} #{md5_clause} || #{sudo} wget --timeout=5 --quiet --timestamping #{src_package[:url]}"
       else
         puts "DOWNLOAD SRC: Download method not recognised. src_package[:download_method]: #{src_package[:download_method]}"
     end
