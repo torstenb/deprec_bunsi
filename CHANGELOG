@@ -1,3 +1,15 @@
+# dprec_bunsi changelog
+
+= 2.2.0 (Jan 26, 2010)
+
+* Added `mod_rails` recipe, which uses Nginx as web server and Passenger as app server 
+* Added `phpmyadmin` recipe; uses version 3.2.4 
+* Added `minicgi` recipe for PHP support on Nginx
+* Updated REE to 1.8.7-2009.10 + addl. minor task changes in the recipe
+* Updated Sphinx to 0.9.9 
+* Updated Monit to 5.0.3
+* Changed run method for MySQL; add task :change_root_pw
+
 # deprec changelog
 
 = 2.1.4 (Sep 16, 2009)
