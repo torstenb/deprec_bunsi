@@ -4,10 +4,10 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :sphinx do
       
       SRC_PACKAGES[:sphinx] = {
-        :filename => 'sphinx-0.9.8.1.tar.gz',   
-        :dir => 'sphinx-0.9.8.1',  
-        :url => "http://www.sphinxsearch.com/downloads/sphinx-0.9.8.1.tar.gz",
-        :unpack => "tar zxf sphinx-0.9.8.1.tar.gz;",
+        :filename => 'sphinx-0.9.9.tar.gz',   
+        :dir => 'sphinx-0.9.9',  
+        :url => "http://www.sphinxsearch.com/downloads/sphinx-0.9.9.tar.gz",
+        :unpack => "tar zxf sphinx-0.9.9.tar.gz;",
         :configure => %w(
           ./configure
           ;
@@ -16,15 +16,21 @@ Capistrano::Configuration.instance(:must_exist).load do
         :install => 'make install;'
       }
       
-      desc "install Sphinx Search Engine"
-      task :install do
+      desc "Install Sphinx Search Engine"
+      task :install, :roles => [:app, :sphinx] do
+        install_deps
+        download_and_install
+      end
+    
+      task :download_and_install, :roles => :sphinx do
         deprec2.download_src(SRC_PACKAGES[:sphinx], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:sphinx], src_dir)
       end
-    
+      
       # install dependencies for sphinx
-      task :install_deps do
-        # apt.install( {:base => %w(blah)}, :stable )
+      # note: aspell is required on both the app server and the sphinx server!
+      task :install_deps, roles => [:app, :sphinx] do
+        apt.install( {:base => %w(aspell libaspell-dev aspell-en)}, :stable )
       end
 
       SYSTEM_CONFIG_FILES[:sphinx] = []
@@ -32,10 +38,9 @@ Capistrano::Configuration.instance(:must_exist).load do
       PROJECT_CONFIG_FILES[:sphinx] = [
 
         {:template => 'monit.conf.erb',
-         :path => 'monit.conf',
-         :mode => 0644,
-         :owner => 'root:root'}
-      
+         :path => "#{deploy_to}/monit/sphinx_monit.conf",
+         :mode => 0640,
+         :owner => "root:#{group}"}
       ]
 
       desc <<-DESC
@@ -62,20 +67,20 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :symlink_monit_config, :roles => :sphinx do
-        sudo "ln -sf #{deploy_to}/sphinx/monit.conf #{monit_confd_dir}/sphinx_#{application}.conf"
+        sudo "ln -sf #{deploy_to}/monit/sphinx_monit.conf #{monit_confd_dir}/sphinx_#{application}.conf"
       end
 
 
       # Control
       
       desc "Restart the sphinx searchd daemon"
-      task :restart, :roles => :app do
-        run("cd #{deploy_to}/current; /usr/bin/rake us:start")  ### start or restart?  SUDO ? ###
+      task :restart, :roles => :sphinx do
+        run("cd #{deploy_to}/current; rake us:restart RAILS_ENV=#{stage}")
       end
 
       desc "Regenerate / Rotate the search index."
-      task :reindex, :roles => :app do
-        run("cd #{deploy_to}/current; /usr/bin/rake us:in")  ### SUDO ? ###
+      task :reindex, :roles => :sphinx do
+        run("cd #{deploy_to}/current; rake us:in RAILS_ENV=#{stage}")
       end
 
     end 
