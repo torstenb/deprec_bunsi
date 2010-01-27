@@ -3,11 +3,10 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :deprec do
     namespace :pcre do
 
-        set :pcre_install_dir, '/opt/local'
+        set :pcre_install_dir, '/usr/local/pcre'
                 
         SRC_PACKAGES[:pcre] = {
-          :url => "http://downloads.sourceforge.net/project/pcre/pcre/8.00/pcre-8.00.tar.gz",
-          :configure => "./configure --prefix=#{pcre_install_dir}",
+          :url => "http://downloads.sourceforge.net/project/pcre/pcre/8.00/pcre-8.00.tar.gz"
         }
 
         desc "Install PCRE"
