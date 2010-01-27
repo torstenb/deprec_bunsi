@@ -1,4 +1,4 @@
-<%= shared_path %>/log/*access.log <%= shared_path %>/log/*error.log{
+<%= shared_path %>/log/<%= application %>_access.log <%= shared_path %>/log/<%= application %>_error.log <%= shared_path %>/log/<%= stage %>.log {
         daily
         missingok
         compress

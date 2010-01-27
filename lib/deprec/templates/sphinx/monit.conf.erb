@@ -1,5 +1,11 @@
-check process searchd with pidfile /opt/local/var/db/sphinx/log/searchd.pid
-	start program = "/usr/local/bin/searchd --config <%= deploy_to %>/current/config/ultrasphinx/production.conf"
-	stop program = "/usr/local/bin/searchd --stop --config <%= deploy_to %>/current/config/ultrasphinx/production.conf"
+check process searchd with pidfile <%= deploy_to %>/current/tmp/pids/searchd.pid
+  group search
 
-	if 3 restarts within 5 cycles then timeout
+  start program = "/bin/bash -c 'export HOME=/home/<%= user %> && export PATH=/usr/local/sbin:/usr/local/bin:$PATH && cd <%= deploy_to %>/current && rake RAILS_ENV=<%= stage %> ultrasphinx:daemon:start'"
+        as uid <%= user %> and gid <%= group %>
+  stop program = "/bin/bash -c 'export HOME=/home/<%= user %> && export PATH=/usr/local/sbin:/usr/local/bin:$PATH && cd <%= deploy_to %>/current && rake RAILS_ENV=<%= stage %> ultrasphinx:daemon:stop'"
+       as uid <%= user %> and gid <%= group %>
+
+  if mem > 100 Mb for 3 cycles then restart
+  if cpu > 80% for 5 cycles then restart
+  if 3 restarts within 20 cycles then timeout
