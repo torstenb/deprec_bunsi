@@ -88,22 +88,22 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   desc "Start Monit"
   task :start, :roles => :app do
-    send(run_method, "/etc/init.d/monit start")
+    sudo("/etc/init.d/monit start")
   end
 
   desc "Stop Monit"
   task :stop, :roles => :app  do
-    send(run_method, "/etc/init.d/monit stop")
+    sudo("/etc/init.d/monit stop")
   end
 
   desc "Restart Monit"
   task :restart, :roles => :app  do
-    send(run_method, "/etc/init.d/monit restart")
+    sudo("/etc/init.d/monit restart")
   end
 
   desc "Reload Monit"
   task :reload, :roles => :app  do
-    send(run_method, "/etc/init.d/monit reload")
+    sudo("/etc/init.d/monit reload")
   end
    
   desc <<-DESC
@@ -111,7 +111,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start monit on boot.
   DESC
   task :activate, :roles => :app do
-    send(run_method, "update-rc.d monit defaults")
+    sudo("update-rc.d monit defaults")
   end
   
   desc <<-DESC
@@ -119,7 +119,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start monit on boot.
   DESC
   task :deactivate, :roles => :app do
-    send(run_method, "update-rc.d -f monit remove")
+    sudo("update-rc.d -f monit remove")
   end
   
   task :backup do
