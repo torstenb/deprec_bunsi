@@ -40,7 +40,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         end
         
 
-        deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/, new_password)
+        deprec2.sudo_with_input("passwd #{target_user}", /UNIX password/, new_password)
         
         if make_admin.match(/y/i)
           deprec2.groupadd('admin')
