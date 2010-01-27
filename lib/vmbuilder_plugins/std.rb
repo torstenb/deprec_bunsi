@@ -31,6 +31,18 @@ module Std
     MMAP=false #:nodoc:
   end
 
+  # 10/13/2010 - torstenb
+  # Always run the Sdt commands as sudo - makes much more sense
+  # Yet in order to give back control to :run_method to define the actual way to run the Std-
+  # commands :force_run_method can be set to true
+  def lcl_run_method
+    if fetch(:force_run_method, false)
+      @lcl_run_method = run_method
+    else
+      @lcl_run_method = 'sudo'
+    end
+  end
+
   # Copies the files specified by +file_pattern+ to +destination+
   #
   # Error checking is minimal - a pattern onto a single file will result in +destination+
@@ -62,7 +74,7 @@ module Std
   def su_put(data, destination, temporary_area='/tmp', options={})
     temporary_area = File.join(temporary_area,"#{File.basename(destination)}-$CAPISTRANO:HOST$") 
     put(data, temporary_area, options)
-    send run_method, <<-CMD
+    send lcl_run_method, <<-CMD
       sh -c "install -m#{sprintf("%3o",options[:mode]||0755)} #{temporary_area} #{destination} &&
       rm -f #{temporary_area}"
     CMD
@@ -82,7 +94,7 @@ module Std
 	  fdata=File.open(fname).read
 	end
 	put(fdata, target, options)
-	send run_method, <<-CMD
+	send lcl_run_method, <<-CMD
 	  sh -c "cd #{destination} &&
 	  zcat -f #{target} | tar xvf - &&
 	  rm -f #{target}"
@@ -165,7 +177,7 @@ module Std
     temp_name = random_string
     begin
       fput(patchfile, temp_name, :mode => 0600)
-      send(run_method, %{
+      send(lcl_run_method, %{
         patch -p#{level} -tNd #{where} -r /dev/null < #{temp_name} || true
       })
     ensure
@@ -181,7 +193,7 @@ module Std
   # directories.
   def su_delete(path, options={})
     cmd = "rm -%sf #{path}" % (options[:recursive] ? "r" : "")
-    send(run_method, cmd, options)
+    send(lcl_run_method, cmd, options)
   end
 
   # Render a template file and upload it to the servers

@@ -25,58 +25,70 @@ module Apt
   # Default apt-get command - reduces any interactivity to the minimum.
   APT_GET="DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get" 
 
+  # 10/13/2010 - torstenb
+  # Always run the Apt commands as sudo - anything else wouldn't really make sense, would it?
+  # Yet in order to give back control to :run_method to define the actual way to run the Apt-
+  # commands :force_run_method can be set to true
+  def lcl_run_method
+    if fetch(:force_run_method, false)
+      @lcl_run_method = run_method
+    else
+      @lcl_run_method = 'sudo'
+    end
+  end
+  
   # Run the apt install program across the package list in 'packages'. 
   # Select those packages referenced by <tt>:base</tt> and the +version+
   # of the distribution you want to use.
   def install(packages, version, options={})
     update
     special_options="--allow-unauthenticated" if version != :stable
-    send(run_method, %{
+    send(lcl_run_method, %{
       sh -c "#{APT_GET} -qyu --force-yes #{special_options.to_s} install #{package_list(packages, version)}"
     }, options)
   end
 
   # Run an apt clean
   def clean(options={})
-    send(run_method, %{sh -c "#{APT_GET} -qy clean"}, options)
+    send(lcl_run_method, %{sh -c "#{APT_GET} -qy clean"}, options)
   end
 
   # Run an apt autoclean
   def autoclean(options={})
-    send(run_method, %{sh -c "#{APT_GET} -qy autoclean"}, options)
+    send(lcl_run_method, %{sh -c "#{APT_GET} -qy autoclean"}, options)
   end
 
   # Run an apt distribution upgrade
   def dist_upgrade(options={})
     update
-    send(run_method, %{sh -c "#{APT_GET} -qy dist-upgrade"}, options)
+    send(lcl_run_method, %{sh -c "#{APT_GET} -qy dist-upgrade"}, options)
   end
 
   # Run an apt upgrade. Use dist_upgrade instead if you want to upgrade
   # the critical base packages.
   def upgrade(options={})
     update
-    send(run_method, %{sh -c "#{APT_GET} -qy upgrade"}, options)
+    send(lcl_run_method, %{sh -c "#{APT_GET} -qy upgrade"}, options)
   end
 
   # Run an apt update.
   def update(options={})
-    send(run_method, %{sh -c "#{APT_GET} -qy update"}, options)
+    send(lcl_run_method, %{sh -c "#{APT_GET} -qy update"}, options)
   end
 
   # RPM package install via alien
   def rpm_install(packages, options={})
     install({:base => %w(wget alien) }, :base)
-    send(run_method, "wget -Ncq #{packages.join(' ')}", options)
+    send(lcl_run_method, "wget -Ncq #{packages.join(' ')}", options)
     files=packages.collect { |package| File.basename(package) }
-    send(run_method, "alien -i #{files.join(' ')}", options)
+    send(lcl_run_method, "alien -i #{files.join(' ')}", options)
   end
 
   # Clear the source list and package cache
   def clear_cache(options={})
     clean
     cmd="rm -f /var/cache/apt/*.bin /var/lib/apt/lists/*_* /var/lib/apt/lists/partial/*"
-    send(run_method, cmd, options)
+    send(lcl_run_method, cmd, options)
   end
 
 private

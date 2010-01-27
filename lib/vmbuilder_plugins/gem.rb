@@ -30,20 +30,32 @@ module Gem
   GEM_INSTALL="gem install --no-rdoc --no-ri"
   GEM_UPDATE=GEM_INSTALL.sub("install", "update")
 
+  # 10/13/2010 - torstenb
+  # Always run the Apt commands as sudo - anything else wouldn't really make sense, would it?
+  # Yet in order to give back control to :run_method to define the actual way to run the Apt-
+  # commands :force_run_method can be set to true
+  def lcl_run_method
+    if fetch(:force_run_method, false)
+      @lcl_run_method = run_method
+    else
+      @lcl_run_method = 'sudo'
+    end
+  end
+  
   # Upgrade the *gem* system to the latest version. Runs via *sudo*
   def update_system
-    send(run_method, "#{GEM_UPDATE} --system")
+    send(lcl_run_method, "#{GEM_UPDATE} --system")
   end
 
   # Updates all the installed gems to the latest version. Runs via *sudo*.
   # Don't use this command if any of the gems require a version selection.
   def upgrade
-    send(run_method, GEM_UPDATE)
+    send(lcl_run_method, GEM_UPDATE)
   end
 
   # Removes old versions of gems from installation area.
   def cleanup
-    send(run_method, "gem cleanup")
+    send(lcl_run_method, "gem cleanup")
   end
 
   # Installs the gems detailed in +packages+, selecting version +version+ if
@@ -52,7 +64,7 @@ module Gem
   # +packages+ can be a single string or an array of strings.
   #  
   def install(packages, version=nil)
-    send(run_method,"#{GEM_INSTALL} #{if version then '-v '+version.to_s end} #{packages.to_a.join(' ')}")
+    send(lcl_run_method,"#{GEM_INSTALL} #{if version then '-v '+version.to_s end} #{packages.to_a.join(' ')}")
   end
 
   # Auto selects a gem from a list and installs it.
@@ -64,7 +76,7 @@ module Gem
   def select(package, version=nil, platform='ruby')
     selections={}
     cmd="#{GEM_INSTALL} #{if version then '-v '+version.to_s end} #{package}"
-    send run_method, cmd do |channel, stream, data|
+    send lcl_run_method, cmd do |channel, stream, data|
       data.each_line do | line |
 	case line
 	when /\s(\d+).*\(#{platform}\)/
